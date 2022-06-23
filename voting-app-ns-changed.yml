@@ -70,3 +70,5 @@ stages:
               manifests: |
                 $(Pipeline.Workspace)/manifests/vote-deployment.yaml
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
+              imagePullSecrets: |
+                $(acrsecret)
