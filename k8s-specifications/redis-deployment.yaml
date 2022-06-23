@@ -16,7 +16,7 @@ spec:
         app: redis
     spec:
       containers:
-      - image: acrdemo2306.azurecr.io/library/redis # redis:alpine
+      - image: acrdemo2306.azurecr.io/library/redis:alpine # redis:alpine
         name: redis
         ports:
         - containerPort: 6379

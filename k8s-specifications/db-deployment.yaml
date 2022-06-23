@@ -16,7 +16,7 @@ spec:
         app: db
     spec:
       containers:
-      - image:  acrdemo2306.azurecr.io/library/postgres # postgres:9.4
+      - image:  acrdemo2306.azurecr.io/library/postgres:9.4 # postgres:9.4
         name: postgres
         env:
         - name: POSTGRES_USER
