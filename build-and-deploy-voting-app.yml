@@ -1,0 +1,87 @@
+# Deploy to Azure Kubernetes Service
+# Build and push image to Azure Container Registry; Deploy to Azure Kubernetes Service
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: 'c69f8a1f-f660-4f53-aacc-ed6d9435574f'
+  imageRepositoryVote: 'examplevotingappvote'
+  containerRegistry: 'aksprod2206.azurecr.io'
+  dockerfilePathVote: 'vote/Dockerfile'
+  tag: '$(Build.BuildId)'
+  imagePullSecret: 'aksprod22062115b6ba-auth'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push the vote image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepositoryVote)
+        dockerfile: $(dockerfilePathVote)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+# Publish(upload) artifacts to Azure pipelines
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/k8s-specifications'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+
+- stage: Deploy
+  displayName: Deploy stage
+  dependsOn: Build
+
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: $(vmImageName)
+    environment: 'skocaboyexamplevotingapp-6697.vote'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'manifests'
+              targetPath: '$(Pipeline.Workspace)/manifests'
+          - task: KubernetesManifest@0
+            displayName: Create imagePullSecret
+            inputs:
+              action: createSecret
+              secretName: $(imagePullSecret)
+              dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
+
+          - task: KubernetesManifest@0
+            displayName: Deploy Vote App to Kubernetes cluster
+            inputs:
+              action: deploy
+              manifests: |
+                $(Pipeline.Workspace)/manifests/vote-deployment.yaml
+                $(Pipeline.Workspace)/manifests/vote-service.yaml
+              imagePullSecrets: |
+                $(imagePullSecret)
+              containers: |
+                $(containerRegistry)/$(imageRepositoryVote):$(tag)
+
