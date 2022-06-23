@@ -31,7 +31,9 @@ stages:
         repository: '$(imageRepoVote)'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/$(dockerfileVote)'
-        tags: '$(tag)'
+        tags: |
+          $(tag)
+          latest
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)/s/k8s-specifications'
@@ -73,5 +75,5 @@ stages:
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
               imagePullSecrets: |
                 $(acrsecret)
-              containers: |
-                $(containerRegistry)/$(imageRepoVote):$(tag)
+              #containers: |
+              #  $(containerRegistry)/$(imageRepoVote):$(tag)
