@@ -43,6 +43,7 @@ stages:
   jobs:
   - deployment: Deploy
     displayName: Deploy to AKS
+    environment: 'skocaboy-dev.vote' #namespace gerekli
     pool:
       vmImage: ubuntu-latest
     strategy:
@@ -57,7 +58,7 @@ stages:
           - task: KubernetesManifest@0
             inputs:
               action: 'createSecret'
-              kubernetesServiceConnection: 'voting-app-cluster-vote'
+              # kubernetesServiceConnection: 'voting-app-cluster-vote'  environment ile gerek kalmıyor
               namespace: 'vote'
               secretType: 'dockerRegistry'
               secretName: '$(acrsecretnsvote)'
@@ -65,7 +66,7 @@ stages:
           - task: KubernetesManifest@0
             inputs:
               action: 'deploy'
-              kubernetesServiceConnection: 'voting-app-cluster-vote'
+              # kubernetesServiceConnection: 'voting-app-cluster-vote' environment ile gerek kalmıyor
               namespace: 'vote'
               manifests: |
                 $(Pipeline.Workspace)/manifests/vote-deployment.yaml
