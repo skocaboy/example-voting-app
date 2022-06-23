@@ -24,4 +24,4 @@ spec:
         - containerPort: 80
           name: vote
       imagePullSecrets:
-        - name: votingappauth
+        - name: acrdemo2306-secret
