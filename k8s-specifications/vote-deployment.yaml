@@ -4,7 +4,7 @@ metadata:
   labels:
     app: vote
   name: vote
-  namespace: vote
+  # namespace: vote
 spec:
   replicas: 1
   selector:
@@ -23,5 +23,5 @@ spec:
         ports:
         - containerPort: 80
           name: vote
-      imagePullSecrets:
-        - name: acrdemo2306-secret
+      #imagePullSecrets:
+      # - name: acrdemo2306-secret
