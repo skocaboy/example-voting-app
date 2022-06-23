@@ -11,8 +11,10 @@ resources:
 variables:
   dockerRegistrySvcConn: 'acrdemo2306-svconn'
   imageRepoVote: examplevotingapp_vote
+  imageRepoResult: examplevotingapp_result
   containerRegistry: 'acrdemo2306.azurecr.io'
   dockerfileVote: vote/Dockerfile
+  dockerfileResult: result/Dockerfile
   tag: '$(Build.BuildId)'
 
 stages:
@@ -25,12 +27,21 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - task: Docker@2
-      displayName: Build an push vote image
+      displayName: Build an push vote app image
       inputs:
         containerRegistry: $(dockerRegistrySvcConn)
         repository: '$(imageRepoVote)'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/$(dockerfileVote)'
+        tags: |
+          $(tag)
+    - task: Docker@2
+      displayName: Build an push result app image
+      inputs:
+        containerRegistry: $(dockerRegistrySvcConn)
+        repository: '$(imageRepoResult)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/$(dockerfileResult)'
         tags: |
           $(tag)
     - task: PublishPipelineArtifact@1
@@ -66,13 +77,17 @@ stages:
               secretName: '$(acrsecret)'
               dockerRegistryEndpoint: $(dockerRegistrySvcConn)
           - task: KubernetesManifest@0
+            displayName: Deploy Vote and Result Apps
             inputs:
               action: 'deploy'
               # kubernetesServiceConnection: 'skocaboy-dev-aksprod-vote-1655981154693'  ==> env ile gerekmiyor
               manifests: |
                 $(Pipeline.Workspace)/manifests/vote-deployment.yaml
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
+                $(Pipeline.Workspace)/manifests/result-deployment.yaml
+                $(Pipeline.Workspace)/manifests/result-service.yaml
               imagePullSecrets: |
                 $(acrsecret)
-              #containers: |
-              #  $(containerRegistry)/$(imageRepoVote):$(tag)
+              containers: |
+                $(containerRegistry)/$(imageRepoVote):$(tag)
+                $(containerRegistry)/$(imageRepoResult):$(tag)
