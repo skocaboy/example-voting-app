@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: examplevotingappvote 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: examplevotingappvote
+  template:
+    metadata:
+      labels:
+        app: examplevotingappvote 
+    spec:
+      containers:
+        - name: examplevotingappvote 
+          image: aksprod2206.azurecr.io/examplevotingappvote
+          ports:
+          - containerPort: 80
