@@ -60,7 +60,6 @@ stages:
             inputs:
               action: 'createSecret'
               # kubernetesServiceConnection: 'skocaboy-dev-aksprod-vote-1655981154693'  ==> env ile gerekmiyor
-              namespace: 'vote'
               secretType: 'dockerRegistry'
               secretName: '$(acrsecret)'
               dockerRegistryEndpoint: $(dockerRegistrySvcConn)
@@ -68,7 +67,6 @@ stages:
             inputs:
               action: 'deploy'
               # kubernetesServiceConnection: 'skocaboy-dev-aksprod-vote-1655981154693'  ==> env ile gerekmiyor
-              namespace: 'vote'
               manifests: |
                 $(Pipeline.Workspace)/manifests/vote-deployment.yaml
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
