@@ -11,6 +11,7 @@ resources:
 variables:
   dockerRegistrySvcConn: 'acrdemo2306-svconn'
   imageRepoVote: examplevotingapp_vote
+  containerRegistry: 'acrdemo2306.azurecr.io'
   dockerfileVote: vote/Dockerfile
   tag: '$(Build.BuildId)'
 
@@ -72,3 +73,5 @@ stages:
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
               imagePullSecrets: |
                 $(acrsecret)
+              containers: |
+                $(containerRegistry)/$(imageRepoVote):$(tag)
