@@ -12,9 +12,13 @@ variables:
   dockerRegistrySvcConn: 'acrdemo2306-svconn'
   imageRepoVote: examplevotingapp_vote
   imageRepoResult: examplevotingapp_result
+  imageRepoWorker: examplevotingapp_worker
+  imageRepoRedis: library/redis:alpine
+  imageRepoPostgres: library/postgres:9.4
   containerRegistry: 'acrdemo2306.azurecr.io'
   dockerfileVote: vote/Dockerfile
   dockerfileResult: result/Dockerfile
+  dockerfileWorker: worker/Dockerfile
   tag: '$(Build.BuildId)'
 
 stages:
@@ -42,6 +46,15 @@ stages:
         repository: '$(imageRepoResult)'
         command: 'buildAndPush'
         Dockerfile: '$(Build.SourcesDirectory)/$(dockerfileResult)'
+        tags: |
+          $(tag)
+    - task: Docker@2
+      displayName: Build an push worker app image
+      inputs:
+        containerRegistry: $(dockerRegistrySvcConn)
+        repository: '$(imageRepoWorker)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/$(dockerfileWorker)'
         tags: |
           $(tag)
     - task: PublishPipelineArtifact@1
@@ -77,7 +90,7 @@ stages:
               secretName: '$(acrsecret)'
               dockerRegistryEndpoint: $(dockerRegistrySvcConn)
           - task: KubernetesManifest@0
-            displayName: Deploy Vote and Result Apps
+            displayName: Deploy All Apps
             inputs:
               action: 'deploy'
               # kubernetesServiceConnection: 'skocaboy-dev-aksprod-vote-1655981154693'  ==> env ile gerekmiyor
@@ -86,8 +99,16 @@ stages:
                 $(Pipeline.Workspace)/manifests/vote-service.yaml
                 $(Pipeline.Workspace)/manifests/result-deployment.yaml
                 $(Pipeline.Workspace)/manifests/result-service.yaml
+                $(Pipeline.Workspace)/manifests/db-deployment.yaml
+                $(Pipeline.Workspace)/manifests/db-service.yaml
+                $(Pipeline.Workspace)/manifests/redis-deployment.yaml
+                $(Pipeline.Workspace)/manifests/redis-service.yaml
+                $(Pipeline.Workspace)/manifests/worker-deployment.yaml
               imagePullSecrets: |
                 $(acrsecret)
               containers: |
                 $(containerRegistry)/$(imageRepoVote):$(tag)
                 $(containerRegistry)/$(imageRepoResult):$(tag)
+                $(containerRegistry)/$(imageRepoWorker):$(tag)
+                $(containerRegistry)/$(imageRepoPostgres)
+                $(containerRegistry)/$(imageRepoRedis)
