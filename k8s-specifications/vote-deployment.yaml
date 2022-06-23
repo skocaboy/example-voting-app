@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
     # - image: dockersamples/examplevotingapp_vote:before
-      - image: aksprod2206.azurecr.io/examplevotingapp_vote
+      - image: acrdemo2306.azurecr.io/examplevotingapp_vote
+        imagePullPolicy: Always
         name: vote
         ports:
         - containerPort: 80
