@@ -4,6 +4,7 @@ metadata:
   name: nginxapp1-ingress-service
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
   - host: vote.kocaboy.online
@@ -26,3 +27,10 @@ spec:
             name: result
             port:
               number: 80
+  tls:
+  - hosts:
+    - vote.kocaboy.online
+    secretName: vote-kocaboy-secret           
+  - hosts:
+    - result.kocaboy.online
+    secretName: result-kocaboy-secret 
